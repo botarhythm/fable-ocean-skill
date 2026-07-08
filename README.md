@@ -61,6 +61,9 @@ cp -r ~/fable-ocean-skill/skills/ocean ~/.claude/skills/
 両者は最上位モデルを"3点"に絞る配置へ独立に収束しており、これはこの哲学の正しさの独立検証です。
 本リポジトリのトークン実測スクリプトとフェーズ規律の発想は fable_orchestra 由来。それぞれの独自性を、優劣ではなく個性として大切にしています。
 
+2026年7月、両者の輸入は双方向に一巡しました——Ocean の規格7点が Orchestra 型 v0.4.5 に、Orchestra の計器と運転規則（`agent_usage.py` v0.4.2・壁打ちステージ・セッション境界の経済学）が本リポジトリの SKILL §8/§9 に。
+往復書簡: upstream の [letter-to-ocean.md](https://github.com/akiratsukakoshi/fable_orchestra/blob/main/docs/letter-to-ocean.md) と、当方の [letter-to-orchestra.md](docs/letter-to-orchestra.md)（輸入の決定記録は [adr/0005](docs/adr/0005-import-orchestra-return-pack.md)）。
+
 ## もっと知る（図解）
 
 非エンジニア向けの図解と技術解説はこちら:
