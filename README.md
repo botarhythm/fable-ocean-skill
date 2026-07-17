@@ -32,6 +32,7 @@ Fable は、雑多な文脈も未整理の断片もいったんすべて受け�
 |---|---|
 | `skills/ocean/SKILL.md` | 単一エントリ（`/ocean`）。発注→3軸選択→承認ゲート→ハンドオフ→検証→記録 |
 | `skills/ocean/scripts/` | トークン実測の計器（`scope_size.py` / `agent_usage.py`） |
+| `skills/ocean-review/SKILL.md` | 実装前レビューの型（`/ocean-review`）。異種AI（Codex CLI / GPT-5.6系）に2巡の敵対的レビューをさせ、採択を設計へ反映して `docs/reviews/` に記録 |
 | `templates/01_model-selection.md` | モデル選択の3軸（曖昧さ×検出コスト×影響半径） |
 | `templates/02_handoff-task.md` | ハンドオフ文書（1ファイルで往復が完結） |
 | `templates/03_verification-loop.md` | 検証ループ（2敗差し戻し・抜き取り監査） |
@@ -45,9 +46,10 @@ Fable は、雑多な文脈も未整理の断片もいったんすべて受け�
 # 1. clone（テンプレの正本・読み取り専用）
 git clone https://github.com/botarhythm/fable-ocean-skill ~/fable-ocean-skill
 
-# 2. スキルを共通置き場へコピー（全プロジェクトで /ocean 有効）
+# 2. スキルを共通置き場へコピー（全プロジェクトで /ocean・/ocean-review 有効）
 mkdir -p ~/.claude/skills
 cp -r ~/fable-ocean-skill/skills/ocean ~/.claude/skills/
+cp -r ~/fable-ocean-skill/skills/ocean-review ~/.claude/skills/   # 実装前レビュー（Codex 2巡）。要 Codex CLI
 
 # 3. SKILL.md 冒頭の「ハブのパス」を clone 先に合わせる（既定と違う場合）
 ```
