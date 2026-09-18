@@ -15,7 +15,8 @@
 - 同一message.idの行が複数ある(ストリーミング分割)ため、id単位で各usageフィールドのmaxを取る。
   出力トークンは累積更新されるので、初出値や単純合算では大幅に狂う(実測: 87.6k→7.8kに過小)。
 - 単価(USD/MTok): Fable $10/$50、Opus $5/$25、Sonnet $3/$15、Haiku $1/$5。
-  キャッシュ書込=入力単価×1.25(5分TTL)、読取=×0.1。1時間TTL書込は×2(要ダッシュボード照合)。
+  キャッシュ書込=入力単価×1.25(5分TTL)、読取=×0.1。1時間TTL書込は×2。
+  `--ttl 1h` で書込倍率を×2に切り替える(既定5m)。実運用のTTLはダッシュボードで照合し scripts/README.md に確認日を記す。
 - 枠内(サブスク)モデルの行は「枠内」と表示し、USDは従量換算の参考値。
 """
 import argparse
@@ -35,6 +36,8 @@ PRICES = {
     "haiku": (1.0, 5.0),
 }
 METERED_FAMILIES = {"fable"}  # このプロジェクトで従量請求されるモデル
+CACHE_WRITE_MULT = {"5m": 1.25, "1h": 2.0}
+TTL = "5m"  # main() で --ttl から上書き
 
 
 def model_family(model: str) -> str:
@@ -49,7 +52,7 @@ def usd(family: str, t: dict) -> float:
     pin, pout = PRICES[family]
     return (
         t["input"] * pin
-        + t["cache_write"] * pin * 1.25
+        + t["cache_write"] * pin * CACHE_WRITE_MULT[TTL]
         + t["cache_read"] * pin * 0.10
         + t["output"] * pout
     ) / 1_000_000
@@ -136,18 +139,18 @@ def mode_main(path):
         if fam in METERED_FAMILIES:
             metered_total += usd(fam, t)
     print(f"\n従量(Fable)合計: ${metered_total:.2f}")
-    print("※書込は5分TTL(×1.25)換算。1hTTLなら書込×2で再計算。ダッシュボード実測と照合して較正する。")
+    print(f"※書込はTTL {TTL}(×{CACHE_WRITE_MULT[TTL]})換算(--ttl で切替)。ダッシュボード実測と照合して較正する。")
 
 
 def mode_estimate(requests, ctx_k, cold, out_k):
     pin, pout = PRICES["fable"]
     per_req = ctx_k * 1000 * pin * 0.10 / 1e6 + out_k * 1000 * pout / 1e6
-    cold_cost = ctx_k * 1000 * pin * 1.25 / 1e6
+    cold_cost = ctx_k * 1000 * pin * CACHE_WRITE_MULT[TTL] / 1e6
     point = requests * per_req + cold * cold_cost
     lo, hi = point * 0.7, point * 1.4
     print(f"Fable指令塔 事前見積り(較正前 確度±30〜50%)")
     print(f"  前提: リクエスト{requests}回 × (文脈{ctx_k:.0f}k読取 + 出力{out_k:.1f}k) "
-          f"+ キャッシュ切れ{cold}回")
+          f"+ キャッシュ切れ{cold}回 (TTL {TTL})")
     print(f"  1リクエストあたり ≈ ${per_req:.2f} / キャッシュ切れ1回 ≈ ${cold_cost:.2f}")
     print(f"  → 概算 ${point:.1f}(レンジ ${lo:.1f}〜${hi:.1f})")
     print(f"  リクエスト数の目安: 計画・委譲指示5〜8 + WPあたり検収3〜5 + 差し戻し1回3〜5")
@@ -161,7 +164,10 @@ def main():
     ap.add_argument("--ctx", type=float, default=145.0, help="平均文脈 k tok(既定145=実測較正値)")
     ap.add_argument("--cold", type=int, default=1, help="キャッシュ切れ想定回数")
     ap.add_argument("--out", type=float, default=1.4, help="1リクエスト平均出力 k tok")
+    ap.add_argument("--ttl", choices=("5m", "1h"), default="5m", help="キャッシュTTL(書込倍率 5m=×1.25 / 1h=×2)")
     args = ap.parse_args()
+    global TTL
+    TTL = args.ttl
 
     if args.estimate:
         mode_estimate(args.estimate, args.ctx, args.cold, args.out)

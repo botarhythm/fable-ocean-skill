@@ -11,3 +11,8 @@ fable_orchestra (akiratsukakoshi/fable_orchestra) 由来の計器を移植。
 更新時は upstream の同名スクリプトと突合すること。
 (v0.4.2 取込: 2026-07-08、upstream docs/letter-to-ocean.md の「お返し」による。message.id単位でmaxを取る集計修正を含む — 旧版の「最後のusage採用」は出力トークンを大幅過小計上していた)
 (Ocean側パッチ: agent_usage.py 冒頭の stdout UTF-8 shim のみ — Windows cp932 コンソール対策。突合時はこのブロックを除いて比較)
+(Ocean側パッチ2 2026-09-18: `--ttl 5m|1h` を追加。キャッシュ書込倍率を 5m=×1.25 / 1h=×2 で切替。upstream v0.4.2 には無い引数 — 突合時は CACHE_WRITE_MULT/TTL 周辺を除いて比較)
+
+## TTL前提の確認
+
+既定は保守的に 5m。Claude Code の指令塔セッションは1時間TTLで動いている旨が環境情報に表示されるため（2026-09-18 確認、usage overage 時は5分TTLへ落ちる）、指令塔セッションの集計・見積りは `--ttl 1h` を付ける。自分の請求ダッシュボードで書込単価を照合して既定を決めること。
