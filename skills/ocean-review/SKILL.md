@@ -1,6 +1,6 @@
 ---
 name: ocean-review
-description: 実装・設計に着手する前に、異種AI（Codex CLI / GPT-5.6系）へ2巡の敵対的レビューをさせて設計を固める型。設計メモ・実装計画・仕様・差分を「実装前レビュー」に掛けたいとき、Codex に第三者レビューさせたいとき、Fable/Opus が書いた設計を別系統のモデルで検証したいときに使う。Ocean型の検証ループ(§5)の実装前フェーズを担う。出力は採択結果を反映した設計＋`docs/reviews/` のレビュー記録。
+description: 実装・設計に着手する前に、異種AI（Codex CLI / GPT-6 Astra 低エフォート）へ2巡の敵対的レビューをさせて設計を固める型。設計メモ・実装計画・仕様・差分を「実装前レビュー」に掛けたいとき、Codex に第三者レビューさせたいとき、Fable/Opus が書いた設計を別系統のモデルで検証したいときに使う。Ocean型の検証ループ(§5)の実装前フェーズを担う。出力は採択結果を反映した設計＋`docs/reviews/` のレビュー記録。
 ---
 
 # Ocean Review — 実装前・異種AI 2巡レビューの型（`/ocean-review`）
@@ -12,9 +12,10 @@ Ocean 型は Fable（設計）× Opus/Sonnet（実装）を文書ハンドオフ
 
 ## 前提（プロジェクトのCLAUDE.mdが優先）
 
-- Codex CLI が導入済み（`codex --version` で確認）。未導入ならユーザーに提示して止まる。
-- **モデルは5.6系**（例: `gpt-5.6-sol`）。プロジェクトによって指定が違えばそのCLAUDE.md/メモが優先。
+- Codex CLI が導入済み（`codex --version` で確認）。**Astra を指定するには v0.153.1 以降**が必要。未導入・旧版ならユーザーに提示して止まる。
+- **モデルは `gpt-6-astra`、推論エフォートは `low`**。レビューは一次情報の直読が主で、深い探索より「別系統の目で穴を指摘する」ことが価値。低エフォートで往復を速く安く回し、必要なら第2ターンで個別論点だけ効かせる。config.toml の既定に依存せず、コマンド側で `-c model_reasoning_effort=low` を毎回明示する。プロジェクトによって指定が違えばそのCLAUDE.md/メモが優先。
 - レビュー記録の置き場は対象プロジェクトの `docs/reviews/`（Ocean §6 の永続化規約。scratchpad に置かない）。
+- **画像生成は Codex CLI に委譲**（Ocean §4 画像生成レーン・スキル群の共通理解）: 図版・サムネ・コンセプトアート等を作る局面では `codex exec` に生成させ、品質で他経路を選ばない。
 - このコマンドは**レビューと採択の記録まで**。実装の着手・コミット・デプロイは Ocean 本体の承認ゲート（§7）に従う。
 
 ## 0. 対象を用意する
@@ -32,7 +33,7 @@ Ocean 型は Fable（設計）× Opus/Sonnet（実装）を文書ハンドオフ
 対象プロジェクトのディレクトリに `cd` してから実行する（**trusted directory 判定と相対パス解決のため**）:
 
 ```bash
-cd <対象repo> && codex exec -m <5.6系モデル> --sandbox read-only --skip-git-repo-check "<レビュー依頼プロンプト>"
+cd <対象repo> && codex exec -m gpt-6-astra -c model_reasoning_effort=low --sandbox read-only --skip-git-repo-check "<レビュー依頼プロンプト>" < /dev/null
 ```
 
 - `--sandbox read-only` — Codex に**コードを読ませるが書かせない**。一次情報を生で渡す経路。
