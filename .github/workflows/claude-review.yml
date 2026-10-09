@@ -1,15 +1,21 @@
 name: Claude Code Review
 
 # PR が作られたら Claude Code（Opus 5.5・サブスク認証）が自動でレビューしてコメントする。
-# 下書き・クローズ済み・自明な PR・既に Claude がコメントした PR はスキップされる。
+# セキュリティ（2026-10-09）:
+#  - 同じリポジトリのブランチから botarhythm 本人が出した PR だけが対象（フォーク・他人の PR は走らせない）
+#  - action はコミット SHA 固定・既定権限は空・レビューは読取権限＋コメント投稿ツールのみ
 
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
 
+permissions: {}
+
 jobs:
   review:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor == 'botarhythm'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     concurrency:
       group: claude-review-${{ github.event.pull_request.number }}
       cancel-in-progress: true
@@ -19,10 +25,11 @@ jobs:
       issues: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 1
-      - uses: anthropics/claude-code-action@v1
+          persist-credentials: false
+      - uses: anthropics/claude-code-action@9171db3e57d6a3140a37ddc2ba92788584e0ead6 # v1.0.234
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
@@ -31,4 +38,5 @@ jobs:
           claude_args: |
             --model claude-opus-5-5
             --effort medium
+            --max-turns 30
             --allowedTools "mcp__github_inline_comment__create_inline_comment"
