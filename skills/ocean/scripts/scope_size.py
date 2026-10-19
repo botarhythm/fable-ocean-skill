@@ -61,9 +61,9 @@ def main():
     if est_tokens <= 100_000:
         band = "直読圏(~100k tok): 指令塔が全読してよい。委譲は固定費負け"
     elif est_tokens <= 500_000:
-        band = "ハイブリッド(100k〜500k tok): 広さ=Sonnet圧縮+コアを指令塔が直読"
+        band = "ハイブリッド(100k〜500k tok): 広さ=安い器(軽い実行モデル/外部の器)で圧縮+コアを指令塔が直読"
     else:
-        band = "蒸留必須(500k tok超): Sonnet並列で圧縮。直読は判断点のピンポイントのみ"
+        band = "蒸留必須(500k tok超): 安い器(軽い実行モデル/外部の器)の並列で圧縮。直読は判断点のピンポイントのみ"
     print(f"対象: {' '.join(sys.argv[1:])}")
     print(f"ファイル数: {files} / コード行数: {code_lines:,} / 推定トークン: {est_tokens/1000:.0f}k")
     print(f"帯: {band}")

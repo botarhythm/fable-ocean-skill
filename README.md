@@ -1,7 +1,8 @@
 # Fable Ocean — 開発手法の型（`/ocean` skill）
 
-Fable（設計・レビュー）と Opus / Sonnet（実装）を**文書ハンドオフ**で連携させ、
-高い最上位モデルのトークンを「判断が成果物になる仕事」だけに使うための、プロジェクト非依存の型です。
+指令塔（判断・発注・裁定）と実行モデル・外部の器（実装）を**文書ハンドオフ**で連携させ、
+実装と別の系統で監査するための、プロジェクト非依存の型です。高いモデルのトークンは「判断が成果物になる仕事」だけに使います。
+役割と具体的なモデルの対応は `templates/01_model-selection.md` §2 にだけ書きます（2026-10-19 時点の指令塔は Opus 5.5、昇格先は Fable 5.1）。
 Claude Code の `/ocean` スキルとして、どのプロジェクトからでも同じ手順で起動できます。
 
 ## 名前の由来
@@ -14,7 +15,7 @@ Fable は、雑多な文脈も未整理の断片もいったんすべて受け�
 
 ## 哲学（3つの柱）
 
-1. **最上位モデルは"3点"だけ** — AC（受け入れ条件）の設計 / 差し戻しの診断 / 抜き取り監査。判断が成果物になる短い仕事にだけ使う。
+1. **指令塔は決まった点だけ** — AC（受け入れ条件）の設計 / 差し戻しの診断 / 監査の裁定 / 不可逆操作の計画と事後確認。判断が成果物になる短い仕事にだけ使う。監査そのものは実装と別の系統（別の会社のモデル）に出す。
 2. **量のある仕事は割安モデルへ** — 実装・調査・定型作業は、受け入れ条件つきの1ファイル（ハンドオフ文書）にして下位モデルへ渡す。別セッション・別AIにも手渡せる。
 3. **状態はファイルに外部化** — `CLAUDE.md` / `KNOWLEDGE.md` / `docs/adr/` / `tasks/` に。誰も常駐しなくても新規セッションが動き出せる。
 
@@ -31,14 +32,14 @@ Fable は、雑多な文脈も未整理の断片もいったんすべて受け�
 | パス | 内容 |
 |---|---|
 | `skills/ocean/SKILL.md` | 単一エントリ（`/ocean`）。発注→3軸選択→承認ゲート→ハンドオフ→検証→記録 |
-| `skills/ocean/scripts/` | トークン実測の計器（`scope_size.py` / `agent_usage.py`） |
-| `skills/ocean-review/SKILL.md` | 実装前レビューの型（`/ocean-review`）。異種AI（Codex CLI / GPT-5.6系）に2巡の敵対的レビューをさせ、採択を設計へ反映して `docs/reviews/` に記録 |
-| `templates/01_model-selection.md` | モデル選択の3軸（曖昧さ×検出コスト×影響半径） |
-| `templates/02_handoff-task.md` | ハンドオフ文書（1ファイルで往復が完結） |
-| `templates/03_verification-loop.md` | 検証ループ（2敗差し戻し・抜き取り監査） |
+| `skills/ocean/scripts/` | トークン実測の計器（`scope_size.py` / `agent_usage.py`）と、そのテスト（`test_agent_usage.py`） |
+| `skills/ocean-review/SKILL.md` | 実装前レビューの型（`/ocean-review`）。異種AI（Codex CLI / GPT-6 Astra）に2巡の敵対的レビューをさせ、採択を設計へ反映して `docs/reviews/` に記録 |
+| `templates/01_model-selection.md` | モデル選択の3軸（曖昧さ×検出コスト×影響半径）と、役割ごとのモデルの割り当て |
+| `templates/02_handoff-task.md` | ハンドオフ文書（1ファイルで往復が完結。不可逆操作の承認欄つき） |
+| `templates/03_verification-loop.md` | 検証ループ（2敗差し戻し・抜き取り監査・別系統の監査） |
 | `templates/04_state-persistence.md` | 状態永続化（KNOWLEDGE / ADR / tasks） |
 | `templates/05_order-review.md` | 既存プロジェクトのレビュー発注 |
-| `templates/06_order-fullstack.md` | 新規開発の発注（確認ゲートは2回だけ） |
+| `templates/06_order-fullstack.md` | 新規開発の発注（要件・設計の確認は2回。不可逆操作の承認は別に都度） |
 
 ## 導入
 

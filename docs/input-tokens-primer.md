@@ -1,5 +1,6 @@
 > 出自: [fable_orchestra](https://github.com/akiratsukakoshi/fable_orchestra) docs/input-tokens-primer.md(2026-07-08 取込・原文まま)。
 > Ocean の F2 運用(従量Fable)の基礎教材として収蔵。単価・仕様が変わったら upstream と突合して更新する。
+> **歴史資料の注記(2026-10-19)**: 本文の単価と F1/F2・最上位モデルを指令塔にする前提は収蔵時のもの。F1/F2 は廃止され、指令塔は最上位の次のモデル(Opus 5.5)になった。仕組み(キャッシュ・往復数×文脈量の積算)の説明はそのまま有効。現行の単価は `templates/01_model-selection.md` §2、現行の運転規則は `skills/ocean/SKILL.md` §3・§7・§9 を参照。
 
 # インプットトークンの仕組み — 「読み込み」にお金がかかる本当の理由
 
